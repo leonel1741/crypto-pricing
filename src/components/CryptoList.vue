@@ -168,6 +168,7 @@
   const filteredCoins = computed(() => {
     return coinList.value.filter((coin) => {
       const text = search.value.toLowerCase()
+      currentPage.value = 1
       return (
         coin.name.toLowerCase().includes(text) ||
         coin.symbol.toLowerCase().includes(text)

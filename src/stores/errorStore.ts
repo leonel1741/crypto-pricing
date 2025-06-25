@@ -9,7 +9,7 @@ export const useErrorStore = defineStore('errorStore', {
       this.errorStates[key] = message
     },
     getError(key: string) {
-      return this.errorStates[key]
+      return this.errorStates[key] ?? null
     },
     clear() {
       this.errorStates = {}

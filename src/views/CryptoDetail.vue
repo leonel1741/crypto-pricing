@@ -3,44 +3,48 @@
     <button class="btn btn-secondary " @click="goBack">Volver a la lista</button>
   </div>
 
-  <div class="d-flex justify-content-center align-items-center" style="height: 90dvh;" v-if="coin.value">
+  <LoadingSpinner v-if="isLoadingCoins('crypto')" />
+
+  <ErrorMessage v-else-if="getError('crypto')" :message="getError('coins') || 'Ocurrió un error inesperado.'" />
+
+  <div v-else-if="coin" class="d-flex justify-content-center align-items-center" style="height: 90dvh;">
     <div
       class="card shadow-lg p-4 bg-white rounded "
       style="max-width: 500px; width: 100%;"
     >
       <!-- Detalles de la Criptomoneda -->
-      <img :src="coin.value.image" class="card-img-top mb-3" alt="Coin image" style="max-height: 250px; object-fit: contain;" />
+      <img :src="coin.image" class="card-img-top mb-3" alt="Coin image" style="max-height: 250px; object-fit: contain;" />
 
       <div class="card-body text-left">
-        <h5 class="card-title text-center fw-bold">{{ coin.value.name }}</h5>
+        <h5 class="card-title text-center fw-bold">{{ coin.name }}</h5>
 
-        <p class="card-text text-center ">{{ coin.value.symbol.toUpperCase() }}</p>
+        <p class="card-text text-center ">{{ coin.symbol.toUpperCase() }}</p>
 
         <p class="card-text d-flex justify-content-between fw-bold ">
           Precio actual Bs:
           <span>
-            {{ (coin.value.current_price * typeChange).toLocaleString('es-BO', { minimumFractionDigits: 2 }) }}
+            {{ (coin.current_price * typeChange).toLocaleString('es-BO', { minimumFractionDigits: 2 }) }}
           </span>
         </p>
 
         <p class=" d-flex justify-content-between fw-bold ">
           Cambio últimas 24h:
-          <span :class="coin.value.price_change_percentage_24h >= 0 ? 'text-success' : 'text-danger'">
-            {{ coin.value.price_change_percentage_24h.toFixed(2) }}
+          <span :class="coin.price_change_percentage_24h >= 0 ? 'text-success' : 'text-danger'">
+            {{ coin.price_change_percentage_24h.toFixed(2) }}
           </span>
         </p>
 
         <p class="card-text d-flex justify-content-between fw-bold ">
           Capitalizacion del mercado Bs:
           <span>
-            {{ (coin.value.market_cap * typeChange).toLocaleString('es-BO', { minimumFractionDigits: 2 }) }}
+            {{ (coin.market_cap * typeChange).toLocaleString('es-BO', { minimumFractionDigits: 2 }) }}
           </span>
         </p>
 
         <p class="card-text d-flex justify-content-between fw-bold ">
           Volumen total Bs:
           <span>
-            {{ (coin.value.total_volume * typeChange).toLocaleString('es-BO', { minimumFractionDigits: 2 }) }}
+            {{ (coin.total_volume * typeChange).toLocaleString('es-BO', { minimumFractionDigits: 2 }) }}
           </span>
         </p>
       </div>
@@ -52,22 +56,26 @@
 
 
 <script setup lang="ts">
-  import { onMounted, computed, ref } from 'vue'
+  import ErrorMessage from "../components/ErrorMessage.vue";
+  import LoadingSpinner from "../components/LoadingSpinner.vue";
+  import { onMounted, computed } from 'vue'
   import { useRouter } from 'vue-router'
   import { useCoinDetailStore } from '../stores/coinDetailStore'
+  import { useCryptoData } from '../composables/useCryptoData'
 
   const router = useRouter()
   const coinDetailStore = useCoinDetailStore()
 
+  const urlAPI = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd"
+  const urlOficialPage = "https://www.coingecko.com/en/coins/"
+  const { fetchCoinDetail, coin, isLoadingCoins, getError } = useCryptoData()
+
   const typeChange = 6.96
 
-  const selectedCoin = computed(() => coinDetailStore.selectedCoin)
-  const coin = ref({})
+  const coinId = computed(() => coinDetailStore.coinId)
 
-  const urlOficialPage = "https://www.coingecko.com/en/coins/"
-
-  onMounted(() => {
-    coin.value = selectedCoin
+  onMounted(async () => {
+    await fetchCoinDetail(`${urlAPI}&ids=${coinId.value}`)
   })
 
   const goBack = () => {
@@ -75,7 +83,7 @@
   }
 
   const goOficialPage = () => {
-    window.open(`${urlOficialPage}/${selectedCoin.value.id}`, '_blank')
+    window.open(`${urlOficialPage}/${coin?.id}`, '_blank')
   }
 </script>
 

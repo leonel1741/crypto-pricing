@@ -14,7 +14,11 @@
       />
     </div>
 
-    <LoadingSpinner v-if="loading" />
+    <LoadingSpinner v-if="isLoadingCoins()" />
+
+    <div v-else-if="error()">
+      <div class="alert alert-danger">{{ error() }}</div>
+    </div>
 
     <!-- Lista de Criptomonedas -->
     <div
@@ -71,7 +75,7 @@
     </div>
 
     <!-- Paginación -->
-    <nav v-if="totalPages > 1" class="mt-1">
+    <nav v-if="totalPages > 1 && !isLoadingCoins()" class="mt-1">
       <ul class="pagination justify-content-center">
         <li class="page-item" :class="{ disabled: currentPage === 1 }">
           <button class="page-link" @click="goToPage(currentPage - 1)">Anterior</button>
@@ -96,77 +100,80 @@
 
 
 <script setup lang="ts">
-  import LoadingSpinner from "./LoadingSpinner.vue";
+  import LoadingSpinner from "../components/LoadingSpinner.vue";
   import { useCoinDetailStore } from "../stores/coinDetailStore";
-  import { computed, inject, onMounted, ref } from "vue";
+  import { useCryptoData } from '../composables/useCryptoData'
+  import { computed, onMounted, ref } from "vue";
   import { useRouter } from 'vue-router'
+  import type { Coin } from "../types/coin";
+
+  const { fetchCoins, coins, isLoadingCoins, error } = useCryptoData()
 
   const router = useRouter()
   const coinDetailStore = useCoinDetailStore()
 
-  interface Coin {
-    id: string
-    symbol: string
-    name: string
-    image: string
-    current_price: number
-    market_cap: number
-    market_cap_rank: number
-    fully_diluted_valuation: number
-    total_volume: number
-    high_24h: number
-    low_24h: number
-    price_change_24h: number
-    price_change_percentage_24h: number
-    market_cap_change_24h: number
-    market_cap_change_percentage_24h: number
-    circulating_supply: number
-    total_supply: number
-    max_supply: number
-    ath: number
-    ath_change_percentage: number
-    ath_date: Date
-    atl: number
-    atl_change_percentage: number
-    atl_date: Date
-    roi: null
-    last_updated: Date
-  }
+  // interface Coin {
+  //   id: string
+  //   symbol: string
+  //   name: string
+  //   image: string
+  //   current_price: number
+  //   market_cap: number
+  //   market_cap_rank: number
+  //   fully_diluted_valuation: number
+  //   total_volume: number
+  //   high_24h: number
+  //   low_24h: number
+  //   price_change_24h: number
+  //   price_change_percentage_24h: number
+  //   market_cap_change_24h: number
+  //   market_cap_change_percentage_24h: number
+  //   circulating_supply: number
+  //   total_supply: number
+  //   max_supply: number
+  //   ath: number
+  //   ath_change_percentage: number
+  //   ath_date: Date
+  //   atl: number
+  //   atl_change_percentage: number
+  //   atl_date: Date
+  //   roi: null
+  //   last_updated: Date
+  // }
 
-  const http = inject<((url: string) => Promise<any>)>('http')
+  // const http = inject<((url: string) => Promise<any>)>('http')
+  // const loading = ref(true)
+  // const coinList = ref<Coin[]>([])
 
-  const url = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false"
-
-  const loading = ref(true)
+  const URL = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&order=market_cap_desc&per_page=100&page=1&sparkline=false"
 
   const typeChange = 6.96
-  const coinList = ref<Coin[]>([])
   const search = ref('')
 
   const currentPage = ref(1)
   const itemsPerPage = 10
 
-  const getCoinsList = async() => {
-    try {
-      if (http) {
-        loading.value = true
-        const data = await http(url)
-        coinList.value = data
-        }
-    } catch (error) {
-      console.error('Error fetching coins:', error)
-      router.push(`/error-page`)
-    } finally {
-      loading.value = false
-    }
-  }
+  // const getCoinsList = async() => {
+  //   try {
+  //     if (http) {
+  //       loading.value = true
+  //       const data = await http(URL)
+  //       coinList.value = data
+  //       }
+  //   } catch (error) {
+  //     console.error('Error fetching coins:', error)
+  //     router.push(`/error-page`)
+  //   } finally {
+  //     loading.value = false
+  //   }
+  // }
 
   onMounted(async () => {
-    await getCoinsList()
+    await fetchCoins(URL)
   })
 
   const filteredCoins = computed(() => {
-    return coinList.value.filter((coin) => {
+    return coins.filter((coin) => {
       const text = search.value.toLowerCase()
       currentPage.value = 1
       return (
@@ -182,7 +189,7 @@
   }
 
   const updateList = async() => {
-    await getCoinsList()
+    await fetchCoins(URL)
     search.value = ''
   }
 
@@ -205,7 +212,7 @@
 </script>
 
 <style scoped>
-.cursor-pointer {
-  cursor: pointer;
-}
+  .cursor-pointer {
+    cursor: pointer;
+  }
 </style>

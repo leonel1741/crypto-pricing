@@ -6,17 +6,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'about',
-      component: () => import('../components/CryptoList.vue'),
+      component: () => import('../views/CryptoList.vue'),
     },
     {
       path: '/coin/:id',
       name: 'crypto-detail',
-      component: () => import('../components/CryptoDetail.vue') // Ajusta el path
+      component: () => import('../views/CryptoDetail.vue') // Ajusta el path
     },
     {
       path: '/error-page',
       name: 'error-page',
-      component: () => import('../components/ErrorPage.vue') // Ajusta el path
+      component: () => import('../components/ErrorMessage.vue') // Ajusta el path
     }
   ],
 })

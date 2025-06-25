@@ -64,7 +64,7 @@
   const selectedCoin = computed(() => coinDetailStore.selectedCoin)
   const coin = ref({})
 
-  const urlOficialPage = "https://www.coingecko.com/en/coins/bitcoin"
+  const urlOficialPage = "https://www.coingecko.com/en/coins/"
 
   onMounted(() => {
     coin.value = selectedCoin
@@ -75,7 +75,7 @@
   }
 
   const goOficialPage = () => {
-    window.open(urlOficialPage, '_blank')
+    window.open(`${urlOficialPage}/${selectedCoin.value.id}`, '_blank')
   }
 </script>
 

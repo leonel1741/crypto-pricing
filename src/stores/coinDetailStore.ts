@@ -11,7 +11,11 @@ export const useCoinDetailStore = defineStore('coinDetailStore', {
   actions: {
     setCoin(coin: Record<string, any>) {
         this.selectedCoin = coin
-        localStorage.setItem('coinDetail', JSON.stringify(coin))
+        if (coin) {
+          localStorage.setItem('coinDetail', JSON.stringify(coin))
+        } else {
+          localStorage.removeItem('coinDetail')
+        }
     },
     clearCoin() {
       this.selectedCoin = null
